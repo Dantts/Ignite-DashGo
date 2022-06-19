@@ -6,6 +6,8 @@ import {
   Heading,
   HStack,
   Icon,
+  Link,
+  Spinner,
   Table,
   Tbody,
   Td,
@@ -15,20 +17,38 @@ import {
   Tr,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import { BsTrash } from "react-icons/bs";
 import Header from "../../components/Header";
 
 import Pagination from "../../components/Pagination";
 import Sidebar from "../../components/SideBar";
-import Link from "next/link";
+import NextLink from "next/link";
+import { useUsers } from "../../services/hooks/useUsers";
+import { queryClient } from "../../services/queryClient";
+import { api } from "../../services/api";
 
 const UserList: React.FC = () => {
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isFetching, error } = useUsers(page);
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
   });
+
+  const handlePrefetchUser = async (userId: string) => {
+    await queryClient.prefetchQuery(
+      [`@dashgo/users`, userId],
+      async () => {
+        const res = await api.get("/users/" + userId);
+
+        return res.data;
+      },
+      { staleTime: 1000 * 60 * 10 } // 10 minutes
+    );
+  };
 
   return (
     <Box>
@@ -40,8 +60,11 @@ const UserList: React.FC = () => {
           <Flex mb="8" justify={"space-between"} align="center">
             <Heading size={"lg"} fontWeight="normal">
               Users
+              {!isLoading && isFetching && (
+                <Spinner ml="4" size="sm" color="gray.500" />
+              )}
             </Heading>
-            <Link href={"/users/create"} passHref>
+            <NextLink href={"/users/create"} passHref>
               <Button
                 as="a"
                 size="sm"
@@ -52,146 +75,89 @@ const UserList: React.FC = () => {
               >
                 Create new
               </Button>
-            </Link>
+            </NextLink>
           </Flex>
 
-          <Table colorScheme={"whiteAlpha"}>
-            <Thead>
-              <Tr>
-                <Th px={["4", "4", "6"]} color="gray.300" w="8">
-                  <Checkbox colorScheme={"pink"} />
-                </Th>
-                <Th>User</Th>
-                {isWideVersion && <Th>CreatedAt</Th>}
-                {isWideVersion && <Th width={8}>Actions</Th>}
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme={"pink"} />
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight={"bold"}>Gabriel Duarte</Text>
-                    <Text fontSize={"sm"} color="gray.300">
-                      Dantts@email.com
-                    </Text>
-                  </Box>
-                </Td>
-                {isWideVersion && <Td>04 de abril 2022</Td>}
-                <Td>
-                  {isWideVersion && (
-                    <HStack spacing={4}>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="pink"
-                        leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="red"
-                        leftIcon={<Icon as={BsTrash} fontSize="16" />}
-                      >
-                        Delete
-                      </Button>
-                    </HStack>
-                  )}
-                </Td>
-              </Tr>
-
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme={"pink"} />
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight={"bold"}>Gabriel Duarte</Text>
-                    <Text fontSize={"sm"} color="gray.300">
-                      Dantts@email.com
-                    </Text>
-                  </Box>
-                </Td>
-                {isWideVersion && <Td>04 de abril 2022</Td>}
-                <Td>
-                  {isWideVersion && (
-                    <HStack spacing={4}>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="pink"
-                        leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="red"
-                        leftIcon={<Icon as={BsTrash} fontSize="16" />}
-                      >
-                        Delete
-                      </Button>
-                    </HStack>
-                  )}
-                </Td>
-              </Tr>
-
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme={"pink"} />
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight={"bold"}>Gabriel Duarte</Text>
-                    <Text fontSize={"sm"} color="gray.300">
-                      Dantts@email.com
-                    </Text>
-                  </Box>
-                </Td>
-                {isWideVersion && <Td>04 de abril 2022</Td>}
-                <Td>
-                  {isWideVersion && (
-                    <HStack spacing={4}>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="pink"
-                        leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        as="a"
-                        size="sm"
-                        cursor={"pointer"}
-                        fontSize={"sm"}
-                        colorScheme="red"
-                        leftIcon={<Icon as={BsTrash} fontSize="16" />}
-                      >
-                        Delete
-                      </Button>
-                    </HStack>
-                  )}
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
-          <Pagination />
+          {isLoading ? (
+            <Flex justify={"center"}>
+              <Spinner />
+            </Flex>
+          ) : error ? (
+            <Flex justify={"center"}>
+              <Text>Failed to fetch data.</Text>
+            </Flex>
+          ) : (
+            <>
+              <Table colorScheme={"whiteAlpha"}>
+                <Thead>
+                  <Tr>
+                    <Th px={["4", "4", "6"]} color="gray.300" w="8">
+                      <Checkbox colorScheme={"pink"} />
+                    </Th>
+                    <Th>User</Th>
+                    {isWideVersion && <Th>CreatedAt</Th>}
+                    {isWideVersion && <Th width={8}>Actions</Th>}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {data.users.map((user: any) => (
+                    <Tr key={user.id}>
+                      <Td px={["4", "4", "6"]}>
+                        <Checkbox colorScheme={"pink"} />
+                      </Td>
+                      <Td>
+                        <Box>
+                          <Link
+                            color={"purple.400"}
+                            onMouseEnter={() => handlePrefetchUser(user.id)}
+                          >
+                            <Text fontWeight={"bold"}>{user.name}</Text>
+                          </Link>
+                          <Text fontSize={"sm"} color="gray.300">
+                            {user.email}
+                          </Text>
+                        </Box>
+                      </Td>
+                      {isWideVersion && <Td>{user.created_at}</Td>}
+                      <Td>
+                        {isWideVersion && (
+                          <HStack spacing={4}>
+                            <Button
+                              as="a"
+                              size="sm"
+                              cursor={"pointer"}
+                              fontSize={"sm"}
+                              colorScheme="pink"
+                              leftIcon={
+                                <Icon as={RiPencilLine} fontSize="16" />
+                              }
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              as="a"
+                              size="sm"
+                              cursor={"pointer"}
+                              fontSize={"sm"}
+                              colorScheme="red"
+                              leftIcon={<Icon as={BsTrash} fontSize="16" />}
+                            >
+                              Delete
+                            </Button>
+                          </HStack>
+                        )}
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+              <Pagination
+                totalCountOfRegisters={data.totalCount}
+                currentPage={page}
+                onChangePage={setPage}
+              />
+            </>
+          )}
         </Box>
       </Flex>
     </Box>

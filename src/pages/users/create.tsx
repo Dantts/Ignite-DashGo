@@ -16,6 +16,10 @@ import Sidebar from "../../components/SideBar";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useMutation } from "react-query";
+import { api } from "../../services/api";
+import { queryClient } from "../../services/queryClient";
+import { useRouter } from "next/router";
 
 type RegisterUserProps = {
   name: string;
@@ -34,14 +38,32 @@ const registerUserSchema = yup.object().shape({
 });
 
 const CreateUser: React.FC = () => {
+  const router = useRouter();
+  const createUser = useMutation(
+    async (user: RegisterUserProps) => {
+      const res = await api.post("/users", {
+        user: {
+          ...user,
+          created_at: new Date(),
+        },
+      });
+
+      return res.data.user;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("@dashgo/users");
+      },
+    }
+  );
   const { register, handleSubmit, formState } = useForm<RegisterUserProps>({
     resolver: yupResolver(registerUserSchema),
   });
   const { errors } = formState;
 
   const handleRegister: SubmitHandler<RegisterUserProps> = async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log(data);
+    await createUser.mutateAsync(data);
+    router.push("/users");
   };
 
   return (
